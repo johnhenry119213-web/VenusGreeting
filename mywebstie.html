@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venus</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0c;
+            --accent-glow: rgba(0, 217, 255, 0.2);
+            --cursor-normal: url('https://play.vsthemes.org/t-cursors/74843/25a255ea88403b8c79e2bb1b03efd2a5.webp');
+            --cursor-link: url('https://play.vsthemes.org/t-cursors/74843/9c9caa441b225439d2f1dbd3dc5e502d.webp');
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            cursor: none; 
+        }
+
+        /* Moving Background & Static Stripes */
+        .background-animate {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0a0a0c 100%);
+            z-index: -2;
+        }
+        .static-stripes {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 2px);
+            pointer-events: none; z-index: -1;
+        }
+
+        /* Twiggle Cursor */
+        #custom-cursor {
+            position: fixed; width: 32px; height: 32px;
+            background-size: contain; background-repeat: no-repeat;
+            background-image: var(--cursor-normal);
+            pointer-events: none; z-index: 9999;
+            transition: transform 0.1s ease-out;
+            transform-origin: center center;
+            left: 0; top: 0;
+        }
+
+        button { cursor: none !important; }
+
+        /* Shake Animation */
+        #begin-container { text-align: center; transition: opacity 0.8s ease; }
+        .btn-dark {
+            background: #121212; border: 1px solid #333; color: white;
+            padding: 15px 40px; font-size: 1.2rem; border-radius: 5px;
+            animation: smoothShake 3s ease-in-out infinite;
+        }
+        @keyframes smoothShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px) rotate(-0.5deg); }
+            75% { transform: translateX(2px) rotate(0.5deg); }
+        }
+
+        /* Sign Transitions */
+        .sign {
+            position: absolute; text-align: center; opacity: 0;
+            transition: all 0.8s ease; font-size: 2rem;
+            text-shadow: 0 0 10px var(--accent-glow); pointer-events: none;
+        }
+        .choices-container {
+            display: none; flex-direction: column; gap: 10px; margin-top: 130px;
+            opacity: 0; transition: all 0.8s ease; z-index: 10;
+        }
+        .choice-btn {
+            background: rgba(20, 20, 20, 0.8); border: 1px solid #444; color: #ccc;
+            padding: 10px 20px; border-radius: 4px; transition: 0.3s;
+        }
+        .choice-btn:hover { border-color: #00d9ff; color: white; background: #1a1a1a; }
+
+        /* Music Bar */
+        #music-bar {
+            position: fixed; bottom: -100px; left: 0; width: 100%;
+            background: rgba(15, 15, 15, 0.95); border-top: 1px solid #333;
+            padding: 15px 20px; display: flex; align-items: center;
+            justify-content: space-between; box-sizing: border-box;
+            transition: bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
+        }
+        .music-controls button { background: none; border: none; color: white; font-size: 1.5rem; }
+
+        .fade-in { opacity: 1 !important; pointer-events: all !important; }
+        .slide-up { bottom: 0 !important; }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+    <div class="background-animate"></div>
+    <div class="static-stripes"></div>
+
+    <div id="begin-container">
+        <button class="btn-dark" onclick="startExperience()">Begin</button>
+    </div>
+
+    <div id="display-text" class="sign"></div>
+
+    <div id="choices" class="choices-container">
+        <button class="choice-btn" onclick="handleChoice(1)">I'm here to see your cool website</button>
+        <button class="choice-btn" onclick="handleChoice(2)">I guess nothing..</button>
+        <button class="choice-btn" onclick="handleChoice(3)">This is new acc when did u do something like that?</button>
+    </div>
+
+    <div id="music-bar">
+        <div class="music-info">
+            <div style="font-weight:bold; font-size:0.9rem;">It's Raining Somewhere Else</div>
+            <div style="color:#888; font-size:0.8rem;">Made by tobyfox</div>
+        </div>
+        <div class="music-controls">
+            <button onclick="toggleMusic('pause')">⏸️</button>
+            <button onclick="toggleMusic('play')">▶️</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" src="https://files.catbox.moe/u8o67k.mp3"></audio>
+
+    <script>
+        const cursor = document.getElementById('custom-cursor');
+        const audio = document.getElementById('bg-music');
+        let lastX = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            const deltaX = e.clientX - lastX;
+            if (deltaX < -2) cursor.style.transform = 'rotate(-15deg) translateY(5px)';
+            else if (deltaX > 2) cursor.style.transform = 'rotate(15deg) translateY(5px)';
+            else cursor.style.transform = 'rotate(0deg) translateY(0px)';
+            lastX = e.clientX;
+
+            if (e.target.closest('button')) cursor.style.backgroundImage = "var(--cursor-link)";
+            else cursor.style.backgroundImage = "var(--cursor-normal)";
+        });
+
+        function startExperience() {
+            audio.play().catch(() => console.log("Play blocked"));
+            audio.ontimeupdate = function() {
+                if(audio.currentTime >= 173) {
+                    audio.pause();
+                    document.getElementById('music-bar').classList.remove('slide-up');
+                }
+            };
+            document.getElementById('begin-container').style.opacity = '0';
+            setTimeout(() => { 
+                document.getElementById('begin-container').style.display = 'none';
+                playSequence();
+            }, 800);
+            document.getElementById('music-bar').classList.add('slide-up');
+        }
+
+        function playSequence() {
+            showSign("Hi", 3000, () => {
+                showSign("I am Venus", 2000, () => {
+                    showSign("Lmk more about you", 1400, () => {
+                        const display = document.getElementById('display-text');
+                        display.innerHTML = "Who are you my fellow wise friend?";
+                        display.style.transform = "translateY(-60px)";
+                        display.classList.add('fade-in');
+                        const choices = document.getElementById('choices');
+                        choices.style.display = "flex";
+                        setTimeout(() => { choices.classList.add('fade-in'); }, 100);
+                    });
+                });
+            });
+        }
+
+        function showSign(text, duration, callback) {
+            const display = document.getElementById('display-text');
+            display.innerHTML = text;
+            display.classList.add('fade-in');
+            setTimeout(() => {
+                display.classList.remove('fade-in');
+                setTimeout(callback, 800);
+            }, duration);
+        }
+
+        function handleChoice(num) {
+            const choices = document.getElementById('choices');
+            const display = document.getElementById('display-text');
+            choices.classList.remove('fade-in');
+            display.classList.remove('fade-in');
+            setTimeout(() => {
+                choices.style.display = "none";
+                if(num === 1) showSign("This is just a simple website, its just a test might be worken on in the future..", 5000, () => {});
+                else if(num === 2) window.close();
+                else if(num === 3) showSign("none ya business", 800, () => { window.close(); });
+            }, 800);
+        }
+
+        function toggleMusic(action) {
+            if(action === 'pause') audio.pause();
+            else audio.play();
+        }
+    </script>
+</body>
+</html>
